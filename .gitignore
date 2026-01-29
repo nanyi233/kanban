@@ -1,0 +1,39 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+
+# Include kanban folder
+!/kanban/
+!/kanban/**
+
+# Ignore Python cache files in kanban
+kanban/__pycache__/
+kanban/*.pyc
+kanban/*.pyo
+kanban/*.pyd
+kanban/.Python
+kanban/env/
+kanban/venv/
+kanban/.venv/
+kanban/ENV/
+
+# Ignore Python egg files
+kanban/*.egg-info/
+kanban/*.egg
+kanban/dist/
+kanban/build/
+
+# Ignore IDE specific files
+kanban/.idea/
+kanban/.vscode/
+kanban/*.swp
+kanban/*.swo
+
+# Ignore OS specific files
+kanban/.DS_Store
+kanban/Thumbs.db
+
+# Ignore log files
+kanban/*.log

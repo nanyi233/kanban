@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 项目管理看板 - Project Kanban</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>📋 项目管理看板</h1>
+                <span class="subtitle">拖拽卡片管理你的项目优先级</span>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-refresh" onclick="loadProjects()">
+                    🔄 刷新
+                </button>
+                <button class="btn btn-theme" onclick="toggleTheme()">
+                    🌙 主题
+                </button>
+                <button class="btn btn-help" onclick="showHelp()">
+                    ❓ 帮助
+                </button>
+            </div>
+        </header>
+
+        <!-- Statistics Bar -->
+        <div class="stats-bar">
+            <div class="stat-item stat-p0">
+                <span class="stat-label">P0 紧急</span>
+                <span class="stat-count" id="count-p0">0</span>
+            </div>
+            <div class="stat-item stat-p1">
+                <span class="stat-label">P1 重要</span>
+                <span class="stat-count" id="count-p1">0</span>
+            </div>
+            <div class="stat-item stat-p2">
+                <span class="stat-label">P2 待定</span>
+                <span class="stat-count" id="count-p2">0</span>
+            </div>
+            <div class="stat-item stat-total">
+                <span class="stat-label">总计</span>
+                <span class="stat-count" id="count-total">0</span>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>🔍 搜索:</label>
+                <input type="text" id="search-input" placeholder="输入项目名称..." oninput="filterProjects()">
+            </div>
+            <div class="filter-group">
+                <label>🌱 成熟度:</label>
+                <select id="maturity-filter" onchange="filterProjects()">
+                    <option value="all">全部</option>
+                    <option value="seed">🌱 Seed</option>
+                    <option value="sprout">🌿 Sprout</option>
+                    <option value="tree">🌳 Tree</option>
+                    <option value="none">未标记</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📁 类型:</label>
+                <select id="type-filter" onchange="filterProjects()">
+                    <option value="all">全部</option>
+                    <option value="directory">📁 文件夹</option>
+                    <option value="file">📄 文件</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Kanban Board -->
+        <main class="kanban-board">
+            <!-- P0 Column -->
+            <div class="kanban-column column-p0" data-priority="P0">
+                <div class="column-header">
+                    <div class="column-title">
+                        <span class="priority-badge p0">P0</span>
+                        <h2>🔥 紧急执行</h2>
+                    </div>
+                    <span class="column-description">低难度 + 高价值 = 立刻去做</span>
+                </div>
+                <div class="card-container" id="cards-p0" 
+                     ondrop="handleDrop(event)" 
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)">
+                    <!-- Cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- P1 Column -->
+            <div class="kanban-column column-p1" data-priority="P1">
+                <div class="column-header">
+                    <div class="column-title">
+                        <span class="priority-badge p1">P1</span>
+                        <h2>📋 计划推进</h2>
+                    </div>
+                    <span class="column-description">高难度 + 高价值 = 拆解目标</span>
+                </div>
+                <div class="card-container" id="cards-p1"
+                     ondrop="handleDrop(event)" 
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)">
+                    <!-- Cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- P2 Column -->
+            <div class="kanban-column column-p2" data-priority="P2">
+                <div class="column-header">
+                    <div class="column-title">
+                        <span class="priority-badge p2">P2</span>
+                        <h2>💤 随缘处理</h2>
+                    </div>
+                    <span class="column-description">低价值/高难度 = 有空再说</span>
+                </div>
+                <div class="card-container" id="cards-p2"
+                     ondrop="handleDrop(event)" 
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)">
+                    <!-- Cards will be inserted here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>💡 拖拽卡片到不同列来调整优先级 | 双击卡片打开文件/文件夹 | 右键修改成熟度</p>
+        </footer>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 使用帮助</h2>
+                <button class="modal-close" onclick="closeHelp()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>🎯 优先级说明</h3>
+                <ul>
+                    <li><strong>P0 (紧急执行)</strong>: 低难度 + 高价值，传说中的"低垂果实"，立刻去做！</li>
+                    <li><strong>P1 (计划推进)</strong>: 高难度 + 高价值，战略性项目，需要拆解目标逐步推进。</li>
+                    <li><strong>P2 (随缘处理)</strong>: 低价值/高难度，随缘处理，或者干脆扔进"墓地"。</li>
+                </ul>
+                
+                <h3>🌱 成熟度标记</h3>
+                <ul>
+                    <li><strong>🌱 Seed</strong>: 只有一个标题或一句话的初始想法</li>
+                    <li><strong>🌿 Sprout</strong>: 有了大概框架，正在萌芽</li>
+                    <li><strong>🌳 Tree</strong>: 资料齐备，随时可以开工</li>
+                </ul>
+                
+                <h3>🖱️ 操作方式</h3>
+                <ul>
+                    <li><strong>拖拽</strong>: 将卡片拖到不同列来改变优先级</li>
+                    <li><strong>双击</strong>: 打开文件或文件夹</li>
+                    <li><strong>右键</strong>: 修改项目的成熟度标记</li>
+                    <li><strong>搜索</strong>: 使用顶部搜索框快速定位项目</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="menu-title">修改成熟度</div>
+        <div class="menu-item" data-maturity="seed">🌱 Seed - 种子想法</div>
+        <div class="menu-item" data-maturity="sprout">🌿 Sprout - 开始萌芽</div>
+        <div class="menu-item" data-maturity="tree">🌳 Tree - 随时开工</div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" data-maturity="none">❌ 移除标记</div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading">
+        <div class="loading-spinner"></div>
+        <p>加载中...</p>
+    </div>
+
+    <script src="app.js"></script>
+    <!-- Audio for sound effects -->
+    <audio id="sound-drop" preload="auto">
+        <source src="data:audio/wav;base64,UklGRl9vT19teleGFybQBmYXVuZA==" type="audio/wav">
+    </audio>
+</body>
+</html>
