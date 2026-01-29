@@ -98,6 +98,20 @@
     --color-p2-bg: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(29, 78, 216, 0.3) 100%);
 }
 
+/* ========================================
+   Three.js Canvas Background
+======================================== */
+
+#three-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
 /* Reset & Base */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -512,10 +526,14 @@ body::before {
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     cursor: grab;
-    transition: all var(--transition-normal);
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, border-color var(--transition-normal);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     position: relative;
     overflow: hidden;
+    /* 3D Transform Support */
+    transform-style: preserve-3d;
+    will-change: transform;
+    backface-visibility: hidden;
 }
 
 .project-card::before {
@@ -531,10 +549,10 @@ body::before {
 }
 
 .project-card:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-    transform: translateY(-4px);
     border-color: var(--color-accent);
 }
+
+/* Note: 3D hover transforms are handled by JavaScript in three-background.js */
 
 .project-card:hover::before {
     opacity: 1;
@@ -546,9 +564,14 @@ body::before {
 }
 
 .project-card.dragging {
-    opacity: 0.6;
-    transform: rotate(2deg) scale(1.05);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    opacity: 0.8;
+    transform: perspective(1000px) rotateY(5deg) rotateX(-5deg) scale(1.08) translateZ(20px) !important;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.2),
+        0 0 30px rgba(139, 92, 246, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+    border-color: var(--color-accent);
+    z-index: 1000;
 }
 
 .project-card.hidden {
@@ -1085,4 +1108,316 @@ body::before {
         page-break-inside: avoid;
         margin-bottom: 20px;
     }
+}
+
+/* ========================================
+   Enhanced 3D Effects & Animations
+======================================== */
+
+/* 3D Column Depth Effect */
+.kanban-column {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.kanban-column::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 10px;
+    right: 10px;
+    height: 20px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.kanban-column:hover::after {
+    opacity: 1;
+}
+
+/* Enhanced Card Glow Effect */
+.project-card::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+        135deg,
+        rgba(139, 92, 246, 0) 0%,
+        rgba(139, 92, 246, 0.2) 50%,
+        rgba(236, 72, 153, 0.2) 100%
+    );
+    border-radius: calc(var(--radius-lg) + 2px);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity var(--transition-normal);
+    filter: blur(8px);
+}
+
+.project-card:hover::after {
+    opacity: 1;
+}
+
+/* 3D Floating Animation for Stats */
+@keyframes float3D {
+    0%, 100% {
+        transform: translateY(0) rotateX(0) rotateY(0);
+    }
+    25% {
+        transform: translateY(-5px) rotateX(2deg) rotateY(-2deg);
+    }
+    50% {
+        transform: translateY(-8px) rotateX(0) rotateY(0);
+    }
+    75% {
+        transform: translateY(-5px) rotateX(-2deg) rotateY(2deg);
+    }
+}
+
+.stat-item {
+    transform-style: preserve-3d;
+}
+
+.stat-item:hover {
+    animation: float3D 2s ease-in-out infinite;
+}
+
+/* Enhanced Button 3D Effect */
+.btn {
+    transform-style: preserve-3d;
+}
+
+.btn:hover {
+    transform: translateY(-3px) translateZ(10px);
+}
+
+.btn:active {
+    transform: translateY(0) translateZ(0);
+}
+
+/* 3D Priority Badge Pulse */
+@keyframes badgePulse3D {
+    0%, 100% {
+        transform: scale(1) translateZ(0);
+        box-shadow: 0 2px 8px var(--color-accent-light);
+    }
+    50% {
+        transform: scale(1.05) translateZ(5px);
+        box-shadow: 0 4px 15px var(--color-accent-light);
+    }
+}
+
+.priority-badge {
+    animation: badgePulse3D 2s ease-in-out infinite;
+}
+
+/* Drag Over 3D Effect */
+.card-container.drag-over {
+    transform: translateZ(5px);
+    box-shadow: inset 0 0 30px rgba(139, 92, 246, 0.1);
+}
+
+/* Enhanced Loading Spinner 3D */
+@keyframes spin3D {
+    0% {
+        transform: perspective(100px) rotateX(0) rotateY(0);
+    }
+    25% {
+        transform: perspective(100px) rotateX(180deg) rotateY(0);
+    }
+    50% {
+        transform: perspective(100px) rotateX(180deg) rotateY(180deg);
+    }
+    75% {
+        transform: perspective(100px) rotateX(0) rotateY(180deg);
+    }
+    100% {
+        transform: perspective(100px) rotateX(0) rotateY(360deg);
+    }
+}
+
+.loading-spinner {
+    border-radius: var(--radius-md);
+    animation: spin3D 2s linear infinite;
+}
+
+/* Ripple Effect on Click */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    width: 20px;
+    height: 20px;
+    animation: ripple 0.6s ease-out;
+    pointer-events: none;
+}
+
+/* Sound Indicator Animation */
+@keyframes soundWave {
+    0%, 100% {
+        transform: scaleY(0.5);
+    }
+    50% {
+        transform: scaleY(1);
+    }
+}
+
+.sound-indicator {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    height: 16px;
+}
+
+.sound-indicator span {
+    width: 3px;
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: 2px;
+    animation: soundWave 0.5s ease-in-out infinite;
+}
+
+.sound-indicator span:nth-child(1) { animation-delay: 0s; }
+.sound-indicator span:nth-child(2) { animation-delay: 0.1s; }
+.sound-indicator span:nth-child(3) { animation-delay: 0.2s; }
+.sound-indicator span:nth-child(4) { animation-delay: 0.3s; }
+
+/* Parallax Effect for Header */
+.app-header {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.header-left h1 {
+    transform: translateZ(20px);
+}
+
+/* Modal 3D Entrance */
+@keyframes modalSlideIn3D {
+    from {
+        opacity: 0;
+        transform: perspective(1000px) rotateX(-15deg) translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: perspective(1000px) rotateX(0) translateY(0) scale(1);
+    }
+}
+
+.modal.active .modal-content {
+    animation: modalSlideIn3D 0.5s var(--transition-bounce);
+}
+
+/* Context Menu 3D Effect */
+@keyframes contextMenu3D {
+    from {
+        opacity: 0;
+        transform: perspective(500px) rotateX(-10deg) translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: perspective(500px) rotateX(0) translateY(0) scale(1);
+    }
+}
+
+.context-menu.active {
+    animation: contextMenu3D 0.2s ease-out;
+}
+
+/* Toast 3D Animation */
+@keyframes toastSlide3D {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(30px) perspective(500px) rotateX(20deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) perspective(500px) rotateX(0);
+    }
+}
+
+.toast.active {
+    animation: toastSlide3D 0.4s var(--transition-bounce);
+}
+
+/* Shimmer Effect for Cards */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.project-card.loading-shimmer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-lg);
+}
+
+/* Glow Border Effect on Focus */
+.filter-group input:focus,
+.filter-group select:focus {
+    animation: glowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 3px var(--color-accent-light), 0 4px 15px rgba(139, 92, 246, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 0 5px var(--color-accent-light), 0 4px 25px rgba(139, 92, 246, 0.25);
+    }
+}
+
+/* Neon Glow for Dark Theme */
+[data-theme="dark"] .priority-badge {
+    text-shadow: 0 0 10px currentColor;
+}
+
+[data-theme="dark"] .project-card:hover {
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+[data-theme="dark"] .kanban-column:hover {
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(139, 92, 246, 0.15);
+}
+
+/* Perspective Container for Full 3D Experience */
+.kanban-board {
+    transform-style: preserve-3d;
+    perspective: 2000px;
+}
+
+/* Add subtle rotation on scroll (handled by JS) */
+.scroll-3d {
+    transform: rotateX(var(--scroll-rotate, 0deg));
+    transition: transform 0.1s ease-out;
 }

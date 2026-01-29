@@ -113,6 +113,18 @@ def serve_js():
     return send_from_directory('static', 'app.js')
 
 
+@app.route('/sound-effects.js')
+def serve_sound_effects_js():
+    """Serve the sound effects JS file"""
+    return send_from_directory('static', 'sound-effects.js')
+
+
+@app.route('/three-background.js')
+def serve_three_background_js():
+    """Serve the Three.js background JS file"""
+    return send_from_directory('static', 'three-background.js')
+
+
 @app.route('/api/projects', methods=['GET'])
 def get_all_projects():
     """Get all projects from all priority folders"""
